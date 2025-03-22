@@ -1,15 +1,18 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { AIFeedback } from '@/services/aiService';
-import { FileText } from 'lucide-react';
+import { FileText, ChevronDown, ChevronUp } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface FeedbackDisplayProps {
   feedback: AIFeedback;
 }
 
 export function FeedbackDisplay({ feedback }: FeedbackDisplayProps) {
+  const [showSummary, setShowSummary] = useState(false);
+
   // Format date to a readable string
   const formattedDate = new Date(feedback.timestamp).toLocaleDateString('en-US', {
     month: 'short',
@@ -30,6 +33,10 @@ export function FeedbackDisplay({ feedback }: FeedbackDisplayProps) {
 
   const gradeInfo = getGradeInfo(feedback.score);
 
+  const toggleSummary = () => {
+    setShowSummary(!showSummary);
+  };
+
   return (
     <Card className="overflow-hidden">
       <CardContent className="p-0">
@@ -49,6 +56,29 @@ export function FeedbackDisplay({ feedback }: FeedbackDisplayProps) {
             </div>
           </div>
         </div>
+        
+        {feedback.summary && (
+          <div className="px-4 pt-3">
+            <Button 
+              variant="ghost" 
+              className="p-0 h-auto flex items-center text-blue-600 hover:text-blue-800 hover:bg-transparent"
+              onClick={toggleSummary}
+            >
+              <span className="font-medium">Document Summary</span>
+              {showSummary ? (
+                <ChevronUp className="ml-1 h-4 w-4" />
+              ) : (
+                <ChevronDown className="ml-1 h-4 w-4" />
+              )}
+            </Button>
+            
+            {showSummary && (
+              <div className="mt-2 p-3 bg-gray-50 rounded-md text-sm text-gray-700">
+                {feedback.summary}
+              </div>
+            )}
+          </div>
+        )}
         
         <div className="p-4">
           <h3 className="font-semibold mb-2">Feedback</h3>
