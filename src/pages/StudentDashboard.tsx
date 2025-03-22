@@ -4,7 +4,7 @@ import { FileUpload } from '@/components/FileUpload';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { FileText, Award, Clock, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { AIFeedback, generateAIFeedback } from '@/services/aiService';
+import { AIFeedback, generateAIFeedback, setUseDefaultModel } from '@/services/aiService';
 import { FeedbackDisplay } from '@/components/FeedbackDisplay';
 import { ApiKeyPrompt } from '@/components/ApiKeyPrompt';
 
@@ -13,12 +13,23 @@ export function StudentDashboard() {
   const [feedbacks, setFeedbacks] = useState<AIFeedback[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [openaiApiKey, setOpenaiApiKey] = useState<string>('');
+  const [aiConfigured, setAiConfigured] = useState<boolean>(false);
   
   // Check for saved API key on component mount
   useEffect(() => {
     const savedKey = localStorage.getItem('openai_api_key');
     if (savedKey) {
       setOpenaiApiKey(savedKey);
+      setAiConfigured(true);
+      // Update global API key in window object for the aiService to access
+      (window as any).OPENAI_API_KEY = savedKey;
+    }
+    
+    // Check if user previously selected free model
+    const useFreeModel = localStorage.getItem('use_free_model') === 'true';
+    if (useFreeModel) {
+      setUseDefaultModel(true);
+      setAiConfigured(true);
     }
   }, []);
 
@@ -26,17 +37,32 @@ export function StudentDashboard() {
   const handleApiKeySet = (apiKey: string) => {
     setOpenaiApiKey(apiKey);
     localStorage.setItem('openai_api_key', apiKey);
+    localStorage.removeItem('use_free_model');
+    setAiConfigured(true);
     
     // Update global API key in window object for the aiService to access
     (window as any).OPENAI_API_KEY = apiKey;
+    setUseDefaultModel(false);
+    
+    toast.success('Using OpenAI for AI features');
+  };
+  
+  // Handle using the free model
+  const handleUseDefaultModel = () => {
+    setUseDefaultModel(true);
+    setAiConfigured(true);
+    localStorage.setItem('use_free_model', 'true');
+    localStorage.removeItem('openai_api_key');
+    (window as any).OPENAI_API_KEY = null;
+    toast.success('Using free AI model for summarization');
   };
 
   const handleSubmitAssignment = async (files: File[]) => {
     if (files.length === 0) return;
     
-    // Check if API key is set
-    if (!openaiApiKey && !(window as any).OPENAI_API_KEY) {
-      toast.error('Please set your OpenAI API key first');
+    // Check if AI is configured
+    if (!aiConfigured) {
+      toast.error('Please configure AI settings first');
       return;
     }
     
@@ -70,7 +96,12 @@ export function StudentDashboard() {
     <div className="p-6">
       <h1 className="text-2xl font-bold text-gray-900 mb-6">Student Dashboard</h1>
       
-      {!openaiApiKey && <ApiKeyPrompt onApiKeySet={handleApiKeySet} />}
+      {!aiConfigured && 
+        <ApiKeyPrompt 
+          onApiKeySet={handleApiKeySet} 
+          onUseDefaultModel={handleUseDefaultModel} 
+        />
+      }
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <Card>

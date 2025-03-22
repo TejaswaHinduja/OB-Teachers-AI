@@ -4,12 +4,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface ApiKeyPromptProps {
   onApiKeySet: (apiKey: string) => void;
+  onUseDefaultModel: () => void;
 }
 
-export function ApiKeyPrompt({ onApiKeySet }: ApiKeyPromptProps) {
+export function ApiKeyPrompt({ onApiKeySet, onUseDefaultModel }: ApiKeyPromptProps) {
   const [apiKey, setApiKey] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -32,28 +34,46 @@ export function ApiKeyPrompt({ onApiKeySet }: ApiKeyPromptProps) {
   return (
     <Card className="mb-6">
       <CardHeader>
-        <CardTitle>OpenAI API Configuration</CardTitle>
+        <CardTitle>AI Model Configuration</CardTitle>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <label htmlFor="apiKey" className="text-sm font-medium">
-              Enter your OpenAI API Key
-            </label>
-            <Input
-              id="apiKey"
-              type="password"
-              placeholder="sk-..."
-              value={apiKey}
-              onChange={(e) => setApiKey(e.target.value)}
-              className="w-full"
-            />
-            <p className="text-xs text-gray-500">
-              Your API key is used only in your browser and is not stored on any server.
-            </p>
-          </div>
-          <Button type="submit">Save API Key</Button>
-        </form>
+        <Tabs defaultValue="free">
+          <TabsList className="mb-4">
+            <TabsTrigger value="free">Use Free Model</TabsTrigger>
+            <TabsTrigger value="openai">Use OpenAI (Your Key)</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="free">
+            <div className="space-y-4">
+              <p className="text-sm text-gray-700">
+                Use our provided free AI model for basic summarization. No API key required.
+              </p>
+              <Button onClick={onUseDefaultModel}>Continue with Free Model</Button>
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="openai">
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <label htmlFor="apiKey" className="text-sm font-medium">
+                  Enter your OpenAI API Key
+                </label>
+                <Input
+                  id="apiKey"
+                  type="password"
+                  placeholder="sk-..."
+                  value={apiKey}
+                  onChange={(e) => setApiKey(e.target.value)}
+                  className="w-full"
+                />
+                <p className="text-xs text-gray-500">
+                  Your API key is used only in your browser and is not stored on any server.
+                </p>
+              </div>
+              <Button type="submit">Save API Key</Button>
+            </form>
+          </TabsContent>
+        </Tabs>
       </CardContent>
     </Card>
   );
