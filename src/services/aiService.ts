@@ -1,5 +1,5 @@
 
-import { toast } from "@/components/ui/sonner";
+import { toast } from 'sonner';
 
 // Types for AI feedback
 export interface AIFeedback {

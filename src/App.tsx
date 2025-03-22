@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
-import { Toaster } from '@/components/ui/sonner';
+import { Toaster } from 'sonner';
 import { GraduationCap } from 'lucide-react';
 import { Button } from './components/ui/button';
 import { TeacherDashboard } from './pages/TeacherDashboard';

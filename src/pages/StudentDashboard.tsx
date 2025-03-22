@@ -1,11 +1,11 @@
 
 import React, { useState } from 'react';
-import { FileUpload } from '../components/FileUpload';
-import { Card, CardHeader, CardContent } from '../components/ui/card';
+import { FileUpload } from '@/components/FileUpload';
+import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { FileText, Award, Clock, Loader2 } from 'lucide-react';
-import { toast } from '@/components/ui/sonner';
-import { AIFeedback, generateAIFeedback } from '../services/aiService';
-import { FeedbackDisplay } from '../components/FeedbackDisplay';
+import { toast } from 'sonner';
+import { AIFeedback, generateAIFeedback } from '@/services/aiService';
+import { FeedbackDisplay } from '@/components/FeedbackDisplay';
 
 export function StudentDashboard() {
   const [submissions, setSubmissions] = useState<File[]>([]);

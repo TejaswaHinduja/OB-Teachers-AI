@@ -1,12 +1,12 @@
 
 import React, { useState } from 'react';
-import { FileUpload } from '../components/FileUpload';
-import { Card, CardHeader, CardContent } from '../components/ui/card';
-import { Button } from '../components/ui/button';
+import { FileUpload } from '@/components/FileUpload';
+import { Card, CardHeader, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { FileText, Users, CheckCircle, Loader2 } from 'lucide-react';
-import { toast } from '@/components/ui/sonner';
-import { AIFeedback, generateAIFeedback } from '../services/aiService';
-import { FeedbackDisplay } from '../components/FeedbackDisplay';
+import { toast } from 'sonner';
+import { AIFeedback, generateAIFeedback } from '@/services/aiService';
+import { FeedbackDisplay } from '@/components/FeedbackDisplay';
 
 export function TeacherDashboard() {
   const [assignments, setAssignments] = useState<File[]>([]);
