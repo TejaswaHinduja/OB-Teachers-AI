@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FileUpload } from '@/components/FileUpload';
 import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -7,11 +7,30 @@ import { FileText, Users, CheckCircle, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { AIFeedback, generateAIFeedback } from '@/services/aiService';
 import { FeedbackDisplay } from '@/components/FeedbackDisplay';
+import { ApiKeyPrompt } from '@/components/ApiKeyPrompt';
 
 export function TeacherDashboard() {
   const [assignments, setAssignments] = useState<File[]>([]);
   const [feedbacks, setFeedbacks] = useState<AIFeedback[]>([]);
   const [gradingInProgress, setGradingInProgress] = useState<{[key: string]: boolean}>({});
+  const [openaiApiKey, setOpenaiApiKey] = useState<string>('');
+  
+  // Check for saved API key on component mount
+  useEffect(() => {
+    const savedKey = localStorage.getItem('openai_api_key');
+    if (savedKey) {
+      setOpenaiApiKey(savedKey);
+    }
+  }, []);
+
+  // Save API key to localStorage when it changes
+  const handleApiKeySet = (apiKey: string) => {
+    setOpenaiApiKey(apiKey);
+    localStorage.setItem('openai_api_key', apiKey);
+    
+    // Update global API key in window object for the aiService to access
+    (window as any).OPENAI_API_KEY = apiKey;
+  };
 
   const handleFileSelect = (files: File[]) => {
     setAssignments(prev => [...prev, ...files]);
@@ -20,6 +39,12 @@ export function TeacherDashboard() {
 
   const handleGradeAssignment = async (file: File, index: number) => {
     const fileId = `${file.name}-${index}`;
+    
+    // Check if API key is set
+    if (!openaiApiKey && !(window as any).OPENAI_API_KEY) {
+      toast.error('Please set your OpenAI API key first');
+      return;
+    }
     
     // Check if already grading
     if (gradingInProgress[fileId]) return;
@@ -57,6 +82,8 @@ export function TeacherDashboard() {
   return (
     <div className="p-6">
       <h1 className="text-2xl font-bold text-gray-900 mb-6">Teacher Dashboard</h1>
+      
+      {!openaiApiKey && <ApiKeyPrompt onApiKeySet={handleApiKeySet} />}
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <Card>
@@ -119,7 +146,7 @@ export function TeacherDashboard() {
                     <Button 
                       size="sm" 
                       onClick={() => handleGradeAssignment(file, index)}
-                      disabled={isGrading}
+                      disabled={isGrading || !openaiApiKey}
                     >
                       {isGrading ? (
                         <>

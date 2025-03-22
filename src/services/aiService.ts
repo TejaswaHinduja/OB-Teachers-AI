@@ -15,7 +15,7 @@ export interface AIFeedback {
   strengths: string[];
   areasForImprovement: string[];
   timestamp: Date;
-  summary?: string; // Add summary field
+  summary?: string;
 }
 
 // Extract text from PDF files
@@ -39,35 +39,59 @@ export const extractPdfText = async (file: File): Promise<string> => {
   }
 };
 
-// Generate text summary
-const generateSummary = (text: string): string => {
-  // For demonstration, create a more comprehensive summary
-  // In a real app, you would use an AI API here
+// Generate text summary using OpenAI API
+export const generateSummary = async (text: string): Promise<string> => {
+  // Get API key from window object (set by the dashboard components)
+  const apiKey = (window as any).OPENAI_API_KEY || localStorage.getItem('openai_api_key');
   
-  // Process a larger portion of the text
-  const maxLength = 10000;
-  const truncatedText = text.substring(0, maxLength);
+  if (!apiKey) {
+    return "Please provide an OpenAI API key to generate a summary.";
+  }
   
-  // Split into paragraphs and filter out empty ones
-  const paragraphs = truncatedText.split('\n').filter(p => p.trim().length > 0);
-  
-  // Get more paragraphs for the summary
-  const significantParagraphs = paragraphs.slice(0, Math.min(5, paragraphs.length));
-  
-  // Create a more detailed summary
-  let summary = "Document Summary:\n\n";
-  
-  // Add the first few paragraphs
-  summary += significantParagraphs.join('\n\n');
-  
-  // Add information about document length
-  summary += `\n\nThis document contains ${paragraphs.length} paragraphs and approximately ${text.split(/\s+/).length} words.`;
-  
-  return summary;
+  try {
+    // Truncate text if it's too long for the API
+    const maxLength = 15000;
+    const truncatedText = text.length > maxLength 
+      ? text.substring(0, maxLength) + "..." 
+      : text;
+    
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        model: "gpt-4o-mini",
+        messages: [
+          {
+            role: "system",
+            content: "You are a helpful assistant that provides concise and informative summaries of documents."
+          },
+          {
+            role: "user",
+            content: `Please provide a comprehensive summary of the following document. Include the main points, key arguments, and any important conclusions: \n\n${truncatedText}`
+          }
+        ],
+        max_tokens: 1000,
+        temperature: 0.5
+      })
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(`OpenAI API error: ${errorData.error?.message || 'Unknown error'}`);
+    }
+
+    const data = await response.json();
+    return data.choices[0].message.content;
+  } catch (error) {
+    console.error('Error generating summary with OpenAI:', error);
+    return `Error generating summary: ${(error as Error).message || 'Unknown error'}`;
+  }
 };
 
-// Mock AI service for demonstration
-// In a real application, this would connect to an actual AI API
+// Generate AI feedback
 export const generateAIFeedback = async (file: File): Promise<AIFeedback> => {
   // Simulating API call with a delay
   await new Promise(resolve => setTimeout(resolve, 2000));
@@ -87,8 +111,8 @@ export const generateAIFeedback = async (file: File): Promise<AIFeedback> => {
       // Extract text from PDF
       const pdfText = await extractPdfText(file);
       
-      // Generate summary from text
-      summary = generateSummary(pdfText);
+      // Generate summary using real AI API
+      summary = await generateSummary(pdfText);
       
       feedbackText = "This document demonstrates good structure and organization. The arguments are well-presented, though some citations could be improved.";
       strengths = [
