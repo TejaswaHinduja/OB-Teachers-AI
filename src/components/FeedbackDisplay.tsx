@@ -5,6 +5,8 @@ import { Badge } from '@/components/ui/badge';
 import { AIFeedback } from '@/services/aiService';
 import { FileText, ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 interface FeedbackDisplayProps {
   feedback: AIFeedback;
@@ -33,10 +35,6 @@ export function FeedbackDisplay({ feedback }: FeedbackDisplayProps) {
 
   const gradeInfo = getGradeInfo(feedback.score);
 
-  const toggleSummary = () => {
-    setShowSummary(!showSummary);
-  };
-
   return (
     <Card className="overflow-hidden">
       <CardContent className="p-0">
@@ -59,24 +57,29 @@ export function FeedbackDisplay({ feedback }: FeedbackDisplayProps) {
         
         {feedback.summary && (
           <div className="px-4 pt-3">
-            <Button 
-              variant="ghost" 
-              className="p-0 h-auto flex items-center text-blue-600 hover:text-blue-800 hover:bg-transparent"
-              onClick={toggleSummary}
-            >
-              <span className="font-medium">Document Summary</span>
-              {showSummary ? (
-                <ChevronUp className="ml-1 h-4 w-4" />
-              ) : (
-                <ChevronDown className="ml-1 h-4 w-4" />
-              )}
-            </Button>
-            
-            {showSummary && (
-              <div className="mt-2 p-3 bg-gray-50 rounded-md text-sm text-gray-700">
-                {feedback.summary}
-              </div>
-            )}
+            <Collapsible open={showSummary} onOpenChange={setShowSummary}>
+              <CollapsibleTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  className="p-0 h-auto flex items-center text-blue-600 hover:text-blue-800 hover:bg-transparent"
+                >
+                  <span className="font-medium">Document Summary</span>
+                  {showSummary ? (
+                    <ChevronUp className="ml-1 h-4 w-4" />
+                  ) : (
+                    <ChevronDown className="ml-1 h-4 w-4" />
+                  )}
+                </Button>
+              </CollapsibleTrigger>
+              
+              <CollapsibleContent>
+                <ScrollArea className="mt-2 p-3 bg-gray-50 rounded-md h-[200px] text-sm text-gray-700">
+                  <p className="whitespace-pre-line">
+                    {feedback.summary}
+                  </p>
+                </ScrollArea>
+              </CollapsibleContent>
+            </Collapsible>
           </div>
         )}
         

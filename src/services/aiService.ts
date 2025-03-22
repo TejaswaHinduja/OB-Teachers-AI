@@ -41,19 +41,29 @@ export const extractPdfText = async (file: File): Promise<string> => {
 
 // Generate text summary
 const generateSummary = (text: string): string => {
-  // Limit text length for processing
-  const truncatedText = text.substring(0, 5000);
-  
-  // For demonstration, create a simple summary based on first few paragraphs
+  // For demonstration, create a more comprehensive summary
   // In a real app, you would use an AI API here
+  
+  // Process a larger portion of the text
+  const maxLength = 10000;
+  const truncatedText = text.substring(0, maxLength);
+  
+  // Split into paragraphs and filter out empty ones
   const paragraphs = truncatedText.split('\n').filter(p => p.trim().length > 0);
-  const firstFewParagraphs = paragraphs.slice(0, 3).join('\n');
   
-  // Create a summary that extracts main points
-  const sentences = firstFewParagraphs.split(/[.!?]+/).filter(s => s.trim().length > 0);
-  const topSentences = sentences.slice(0, 5).join('. ');
+  // Get more paragraphs for the summary
+  const significantParagraphs = paragraphs.slice(0, Math.min(5, paragraphs.length));
   
-  return topSentences + (sentences.length > 5 ? '...' : '');
+  // Create a more detailed summary
+  let summary = "Document Summary:\n\n";
+  
+  // Add the first few paragraphs
+  summary += significantParagraphs.join('\n\n');
+  
+  // Add information about document length
+  summary += `\n\nThis document contains ${paragraphs.length} paragraphs and approximately ${text.split(/\s+/).length} words.`;
+  
+  return summary;
 };
 
 // Mock AI service for demonstration
