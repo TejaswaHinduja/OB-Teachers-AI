@@ -11,12 +11,22 @@ export default defineConfig(({ mode }) => ({
   },
   plugins: [
     react(),
-    mode === 'development' &&
-    componentTagger(),
+    mode === 'development' && componentTagger(),
   ].filter(Boolean),
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  build: {
+    target: "es2022", // 👈 Enables top-level await
+    rollupOptions: {
+      onwarn(warning, warn) {
+        // 👇 Silences "Use of eval" warnings (optional)
+        if (warning.message.includes("Use of eval")) return;
+        warn(warning);
+      },
+    },
+  },
 }));
+
